@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sipupliaventura</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-fondo: #fff0f3; 
+            --color-texto: #831843; 
+            --color-boton: #ffb3c6;
+            --color-boton-texto: #590d22;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Quicksand', sans-serif; 
+            user-select: none; 
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        body {
+            background-color: var(--color-fondo);
+            color: var(--color-texto);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            /* Transiciones de color MÁS LENTAS para dar paz y calma (3.5 segundos) */
+            transition: background-color 3.5s cubic-bezier(0.4, 0, 0.2, 1), color 3.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: none; 
+        }
+
+        /* --- Fases de Color --- */
+        body.stage-2 {
+            --color-fondo: #ffb3c6; 
+            --color-texto: #590d22;
+            --color-boton: #fff;
+            --color-boton-texto: #c9184a;
+        }
+        body.stage-3 {
+            --color-fondo: #ff8fa3; 
+            --color-texto: #fff;
+            --color-boton: #590d22;
+            --color-boton-texto: #fff;
+        }
+        body.stage-boss {
+            --color-fondo: #c9184a; 
+            --color-texto: #fff;
+        }
+        body.stage-letter {
+            --color-fondo: #fff0f3; 
+            --color-texto: #831843;
+            --color-boton: #ff8fa3;
+            --color-boton-texto: #fff;
+        }
+        body.stage-gift {
+            --color-fondo: #fffbeb; 
+            --color-texto: #b45309;
+        }
+
+        /* Transiciones de color de los textos en general más relajadas */
+        h1, h2, span, .subtitle, .hint {
+            transition: color 3.5s ease;
+        }
+
+        .screen {
+            position: absolute;
+            width: 90%;
+            max-width: 400px;
+            max-height: 95vh;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            opacity: 0;
+            transform: translateY(40px) scale(0.98);
+            /* Animación moderna y minimalista (suave y fluida) */
+            transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .screen.active {
+            display: flex;
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        /* --- Animaciones Complejas y Decoradas de Entrada --- */
+        .screen.active > * {
+            animation: slideUpDecor 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+            transform-origin: bottom center;
+        }
+        .screen.active .form-container > * {
+            animation: slideUpDecor 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+            transform-origin: bottom center;
+        }
+
+        /* Retrasos en cascada para los elementos internos */
+        .screen.active > :nth-child(1), .screen.active .form-container > :nth-child(1) { animation-delay: 0.1s; }
+        .screen.active > :nth-child(2), .screen.active .form-container > :nth-child(2) { animation-delay: 0.2s; }
+        .screen.active > :nth-child(3), .screen.active .form-container > :nth-child(3) { animation-delay: 0.3s; }
+        .screen.active > :nth-child(4), .screen.active .form-container > :nth-child(4) { animation-delay: 0.4s; }
+        .screen.active > :nth-child(5), .screen.active .form-container > :nth-child(5) { animation-delay: 0.5s; }
+        .screen.active > :nth-child(6), .screen.active .form-container > :nth-child(6) { animation-delay: 0.6s; }
+
+        @keyframes slideUpDecor {
+            0% { opacity: 0; transform: translateY(50px) scale(0.85) rotateX(-20deg); filter: blur(10px); }
+            100% { opacity: 1; transform: translateY(0) scale(1) rotateX(0deg); filter: blur(0); }
+        }
+
+        /* --- Animaciones de Salida del Minijuego --- */
+        .fade-out-up {
+            animation: fadeOutUpAnim 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            pointer-events: none;
+        }
+        @keyframes fadeOutUpAnim {
+            to { opacity: 0; transform: translateY(-40px); filter: blur(8px); }
+        }
+
+        .fade-out-down {
+            animation: fadeOutDownAnim 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            pointer-events: none;
+        }
+        @keyframes fadeOutDownAnim {
+            to { opacity: 0; transform: translateX(-50%) translateY(40px); filter: blur(8px); }
+        }
+        
+        .heart-icon {
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        button {
+            background-color: var(--color-boton);
+            color: var(--color-boton-texto);
+            border: none;
+            padding: 16px 32px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(255, 143, 163, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+            max-width: 300px;
+            margin-top: 15px;
+            z-index: 50;
+        }
+        button:active { transform: scale(0.95); }
+
+        input {
+            width: 100%;
+            padding: 15px 20px;
+            border-radius: 15px;
+            border: 2px solid #ffc2d1;
+            background: rgba(255, 255, 255, 0.9);
+            color: #590d22;
+            margin-bottom: 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            outline: none;
+        }
+        input::placeholder { color: #ffb3c6; }
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(12px);
+            padding: 30px 20px;
+            border-radius: 30px;
+            width: 100%;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 15px 35px rgba(255, 143, 163, 0.3);
+            text-align: center;
+        }
+
+        /* --- Fondo de Flores --- */
+        #flower-container {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .flower {
+            position: absolute;
+            bottom: -50px;
+            opacity: 0;
+            animation: floatUp linear infinite;
+            filter: drop-shadow(0 4px 6px rgba(255, 143, 163, 0.3));
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* --- Mensajes de Feedback --- */
+        #feedback-message {
+            display: none;
+            text-align: center;
+            font-weight: 700;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            width: 100%;
+            opacity: 1 !important;
+            filter: none !important;
+        }
+        .msg-error {
+            background-color: white;
+            color: #c9184a;
+            box-shadow: 0 10px 30px rgba(201, 24, 74, 0.3);
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both !important;
+        }
+        .msg-success {
+            background-color: white;
+            color: #1aa24f;
+            box-shadow: 0 10px 30px rgba(201, 24, 74, 0.3);
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both !important;
+        }
+        #progress-container {
+            display: none;
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 179, 198, 0.4);
+            border-radius: 4px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+        #progress-fill {
+            height: 100%;
+            width: 0%;
+            background-color: #c9184a;
+            transition: width 3s linear;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        /* --- MINIJUEGO UI --- */
+        #game-ui {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 20;
+            display: none;
+        }
+        .top-bar {
+            position: absolute;
+            top: 20px; left: 20px; right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #lives-container {
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+        #score-container {
+            font-weight: 700;
+            font-size: 1.2rem;
+            background: rgba(255,255,255,0.8);
+            padding: 8px 20px;
+            border-radius: 20px;
+            color: #c9184a;
+            border: 2px solid #ffb3c6;
+        }
+        #trash-can {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 4rem;
+            transition: transform 0.1s;
+        }
+
+        .falling-item {
+            position: absolute;
+            width: 110px; 
+            height: 110px; 
+            background-color: #ffc2d1; 
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            box-shadow: 0 8px 25px rgba(201, 24, 74, 0.5);
+            pointer-events: auto;
+            background-size: cover;
+            background-position: center;
+            border: 4px solid #fff;
+        }
+
+        /* EXPLOSIÓN ROSADA MEJORADA */
+        .particle {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background-color: #ff1493; /* Rosa fucsia intenso */
+            border-radius: 50%;
+            pointer-events: none;
+            box-shadow: 0 0 10px #ff1493, 0 0 20px #ff69b4; /* Brillo rosa */
+            animation: explodeAnim 0.7s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+        }
+        @keyframes explodeAnim {
+            0% { transform: translate(0,0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(0.2); opacity: 0; }
+        }
+
+        /* --- JEFE Y BARRIDO --- */
+        #boss-item {
+            position: absolute;
+            width: 240px; 
+            height: 240px; 
+            background: #fff;
+            border-radius: 35px;
+            left: 50%;
+            top: -260px;
+            transform: translateX(-50%);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            font-size: 6rem;
+            pointer-events: auto;
+            border: 8px solid #ff4d6d;
+            box-shadow: 0 0 50px rgba(255, 77, 109, 0.8);
+            background-size: cover;
+            background-position: center;
+        }
+        #boss-health-bar {
+            position: absolute;
+            bottom: 80px;
+            left: 10%;
+            width: 80%;
+            height: 25px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 15px;
+            display: none;
+            border: 3px solid #fff;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        #boss-health-fill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #ff4d6d, #c9184a);
+            transition: width 0.1s;
+        }
+
+        .massive-msg {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 3rem;
+            font-weight: 800;
+            color: #fff;
+            text-align: center;
+            text-shadow: 2px 2px 0 #c9184a, -2px -2px 0 #c9184a, 2px -2px 0 #c9184a, -2px 2px 0 #c9184a;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            width: 90%;
+        }
+        .massive-msg.show {
+            animation: massivePop 4.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        /* Animación un poco más pausada en el centro para dejar leer */
+        @keyframes massivePop {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            10% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+            20% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            90% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1.3); opacity: 0; }
+        }
+
+        /* Burbuja de chat para My Melody */
+        .chat-bubble {
+            background: #fff;
+            color: #c9184a;
+            padding: 15px 25px;
+            border-radius: 25px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            text-shadow: none; /* Quitamos el borde rojo del texto general */
+            margin-top: 15px;
+        }
+        .chat-bubble::after {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 0 15px 15px 15px;
+            border-style: solid;
+            border-color: transparent transparent #fff transparent;
+        }
+
+        /* --- ZONA DE BARRER --- */
+        #sweep-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0; left: 0;
+            display: none;
+            z-index: 30;
+            background-color: #ffc2d1; 
+            background-size: cover;
+            background-position: center;
+        }
+        .dirt-patch {
+            position: absolute;
+            background-color: #9e6b4449; 
+            transition: opacity 0.2s;
+            pointer-events: auto;
+        }
+        #broom-cursor {
+            position: absolute;
+            font-size: 3.5rem;
+            pointer-events: none; 
+            display: none;
+            transform: translate(-30%, -70%); 
+            z-index: 45;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+        }
+        #sweep-time-bar {
+            position: absolute;
+            bottom: 40px; left: 10%; width: 80%;
+            height: 30px;
+            background: rgba(255,255,255,0.8);
+            border-radius: 20px;
+            border: 3px solid #ff4d6d;
+            overflow: hidden;
+            z-index: 40;
+            box-shadow: 0 5px 15px rgba(255, 77, 109, 0.4);
+        }
+        #sweep-time-fill {
+            height: 100%;
+            width: 100%;
+            background: #ff4d6d;
+            transition: width 1s linear;
+        }
+        #sweep-time-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            top: 0; left: 0;
+            color: #fff;
+            font-size: 0.9rem;
+            line-height: 24px;
+            font-weight: 700;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        /* --- CARTA FINAL --- */
+        #letter-container {
+            width: 100%;
+            height: 80vh; 
+            overflow-y: auto;
+            text-align: left;
+            font-size: 1.4rem; 
+            font-weight: 600;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            border: 3px solid #ffb3c6;
+            box-shadow: 0 10px 30px rgba(255, 143, 163, 0.3);
+            color: #831843;
+            /* Scrollbar para navegadores como Firefox */
+            scrollbar-width: thin;
+            scrollbar-color: #ffb3c6 transparent;
+        }
+
+        /* Ocultar barra de desplazamiento predeterminada y estilizar (Chrome, Safari, Móviles) */
+        #letter-container::-webkit-scrollbar {
+            width: 10px;
+        }
+        #letter-container::-webkit-scrollbar-track {
+            background: transparent; 
+            margin: 15px 0; /* Separa un poco la barra de los bordes arriba y abajo */
+        }
+        #letter-container::-webkit-scrollbar-thumb {
+            background-color: #ffb3c6; 
+            border-radius: 20px; 
+            border: 2px solid rgba(255, 255, 255, 0.6); /* Borde a juego con el contenedor */
+        }
+        #letter-container::-webkit-scrollbar-thumb:hover {
+            background-color: #ff8fa3; 
+        }
+
+        /* --- FLORES FINALES (Imagen) --- */
+        #final-flowers-img {
+            max-width: 90%;
+            max-height: 60vh;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: sway 3s ease-in-out infinite alternate;
+            display: none; 
+            opacity: 1 !important; /* CORRECCIÓN: Hace visible la imagen evitando choques de animación */
+        }
+        @keyframes sway {
+            0% { transform: rotate(-3deg); }
+            100% { transform: rotate(3deg); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Fondo de flores dinámico -->
+    <div id="flower-container"></div>
+
+    <!-- MENSAJES MASIVOS -->
+    <div id="massive-msg-1" class="massive-msg">VAMOOOOO lo hiciste excelente mi cachetona</div>
+    
+    <!-- Mensaje de My Melody rediseñado con foto grande y globo de texto -->
+    <div id="massive-msg-2" class="massive-msg" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;">
+        <img id="my-melody-img" src="" alt="My Melody" style="width: 250px; max-width: 80vw; display: none;">
+        <div id="my-melody-emoji" style="font-size: 8rem; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.3));">🐰🎀</div>
+        <div class="chat-bubble">coño pero tu si eres webon pana, te faltó uno pajuo</div>
+    </div>
+
+    <div id="massive-msg-3" class="massive-msg">AHORA SÍ COÑO,<br>TE AMO MUCHO MI AMOR</div>
+    <div id="massive-msg-4" class="massive-msg">PERO ES HORA DE BARRER NOJODA 🧹</div>
+    <div id="massive-msg-5" class="massive-msg" style="font-size: 6rem;">3</div>
+
+    <!-- PANTALLA 1: Inicio -->
+    <div id="screen-1" class="screen active">
+        <span class="subtitle" style="font-weight: 700; text-align: center;">solo personal autorizado, <br> pq hay cámaras y me van a regaña'</span>
+        <button onclick="goToScreen(2, 'stage-2')">Empezar Sipupliaventura</button>
+    </div>
+
+    <!-- PANTALLA 2: Login -->
+    <div id="screen-2" class="screen">
+        <div class="form-container">
+            <h2 style="margin-bottom: 20px; font-weight: 700; color: #831843;">Identifíquese aló</h2>
+            <input type="text" placeholder="Usuario" id="username">
+            <input type="password" placeholder="Contraseña" id="password">
+            <button id="btn-login" onclick="checkPassword()">Ver si la pego</button>
+            <div id="feedback-message"></div>
+            <div id="progress-container"><div id="progress-fill"></div></div>
+        </div><br><br>
+        <p class="hint" style="color: #590d2326; font-weight: 600;">Pista: el usuario es la eeveelution de tipo planta todo en minúsculas pa ponerte a parir y la contraseña es todo pegado la fecha en la que nos conocimos, q dificilote me pasé</p>
+    </div>
+
+    <!-- PANTALLA 3: Instrucciones (TEXTOS SIEMPRE NEGROS) -->
+    <div id="screen-3" class="screen" style="max-height: 90vh;">
+        <div class="form-container" style="text-align: left; padding: 25px;">
+            <p style="font-weight: 700; font-size: 1.2rem; color: #000 !important;">Bienvenida mi amol,</p><br>
+            <p style="color: #000 !important; font-weight: 600;">Para hoy te tengo la prueba definitiva, tendrás que recolectar todos los regalitos que me has dado y que tengo en mi cuarto, si se te queda alguno por el camino lo boto pa la calle, no mentira.</p><br>
+            <p style="color: #000 !important; font-weight: 600;">Tendrás que darle click a cada uno mientras vayan cayendo y tendrás 3 vidas que verás arriba. El juego trata sobre evitar que los bote así que no dejes que entren en la papelera de abajo.</p><br>
+            <p style="color: #000 !important; font-weight: 600;">Te deseo mucho exito y si lo consigues ahí si te daré tu regalo (q ladilloso era, por qué no se lo daba y ya).</p><br>
+            <p style="text-align: center; font-weight: 700; color: #590D22 !important;">Haz click abajo pa ver si te ganas tu muamua.</p>
+        </div>
+        <button onclick="startGame()">Conseguir muamua</button>
+    </div>
+
+    <!-- PANTALLA 4: GAME OVER -->
+    <div id="screen-game-over" class="screen">
+        <div class="form-container">
+            <div style="margin-bottom: 10px;">
+                <h1 style="font-size: 5rem; animation: heartbeat 1.5s infinite;">💔</h1>
+            </div>
+            <p style="text-align: center; margin-bottom: 25px; font-weight: 700; font-size: 1.2rem; color: #831843;">Auchhhh me dolió hasta a mí... ni modo, los tendré que botar, a no ser que...</p>
+            <button onclick="restartGame()">hacerse el loco y darle otra vez</button>
+        </div>
+    </div>
+
+    <!-- PANTALLA 5: ZONA DE BARRER (Overlay) -->
+    <div id="sweep-container"></div>
+    <div id="broom-cursor">🧹</div>
+    
+    <!-- Barra de tiempo -->
+    <div id="sweep-time-bar" style="display:none;">
+        <div id="sweep-time-fill"></div>
+        <div id="sweep-time-text">apuralo pa salir chamita</div>
+    </div>
+
+    <!-- PANTALLA 6: LA CARTA -->
+    <div id="screen-letter" class="screen" style="width: 95%;">
+        <div id="letter-container"></div>
+        <button id="btn-regalo" style="display: none;" onclick="goToScreen('gift', 'stage-gift')">Obtener muamua</button>
+    </div>
+
+    <!-- PANTALLA 7: EL REGALO (Flores) -->
+    <div id="screen-gift" class="screen" style="width: 100%;">
+        <img id="final-flowers-img" src="./floresamarillas.png" alt="Flores Amarillas">
+        <h1 style="margin-top: 30px; color: #b45309; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); font-size: 2.5rem; text-align: center;">Pa ti mi amol, muamuakk 🌻</h1>
+    </div>
+
+    <!-- UI DEL MINIJUEGO -->
+    <div id="game-ui">
+        <div class="top-bar">
+            <div id="score-container">Faltan: <span id="score-text">14</span></div>
+            <div id="lives-container">❤️❤️❤️</div>
+        </div>
+        <div id="trash-can">🗑️</div>
+
+        <!-- Jefe final -->
+        <div id="boss-item"></div>
+        <div id="boss-health-bar">
+            <div id="boss-health-fill"></div>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================
+        // 🛠️ CONFIGURACIÓN DE TODAS TUS IMÁGENES AQUÍ 🛠️
+        // =========================================================
+
+        const imagenMyMelody = './mymelody.png'; // Pon tu ruta aquí (ej: './mymelody.png')
+        const imagenFloresFinales = './floresamarillas.png'; // Pon tu ruta aquí (ej: './flores.jpg')
+        const imagenSuciedad = './sucio.png'; // Pon tu ruta aquí (ej: './tierra.jpg')
+        const fotoFinalBarrer = './cuadro.jpg';
+
+        const memoryImages = [
+            './rojo.jpg',
+            './carta.jpg',
+            './ojo.jpg',
+            './avion.jpg',
+            './muamua.jpg',
+            './flores.jpg',
+            './pika.jpg',
+            './snoopy.jpg',
+            './carta.jpg',
+            './foto.jpg',
+            './cola.jpg',
+            './luna.jpg',
+            './nsqk.jpg',
+            './hoja.jpg',
+            './abeja.jpg'
+        ];
+        // =========================================================
+
+        if(imagenMyMelody) {
+            document.getElementById('my-melody-img').src = imagenMyMelody;
+            document.getElementById('my-melody-img').style.display = 'block';
+            document.getElementById('my-melody-emoji').style.display = 'none';
+        }
+        if(imagenFloresFinales) {
+            document.getElementById('final-flowers-img').src = imagenFloresFinales;
+            document.getElementById('final-flowers-img').style.display = 'block';
+        }
+
+        function spawnBackgroundFlowers() {
+            const container = document.getElementById('flower-container');
+            const flowers = ['🫶', '💗', '❤️‍🩹', '🌻', '🎀', '✨', '🥀', '🏔️'];
+            for(let i = 0; i < 25; i++) {
+                let flower = document.createElement('div');
+                flower.innerText = flowers[Math.floor(Math.random() * flowers.length)];
+                flower.className = 'flower';
+                flower.style.left = (Math.random() * 100) + 'vw';
+                flower.style.animationDuration = (Math.random() * 6 + 6) + 's';
+                flower.style.animationDelay = (Math.random() * 5) + 's';
+                flower.style.fontSize = (Math.random() * 20 + 20) + 'px';
+                container.appendChild(flower);
+            }
+        }
+        spawnBackgroundFlowers();
+
+        // Transición de pantalla un poco más pausada (delay de 1.2s en lugar de 0.8s)
+        function goToScreen(num, stageClass) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            if(stageClass) document.body.className = stageClass;
+            setTimeout(() => {
+                const screenId = typeof num === 'string' ? `screen-${num}` : `screen-${num}`;
+                document.getElementById(screenId).classList.add('active');
+            }, 1200); 
+        }
+
+        function checkPassword() {
+            const user = document.getElementById('username').value.toLowerCase().trim();
+            const pass = document.getElementById('password').value.trim();
+            const btn = document.getElementById('btn-login');
+            const msgBox = document.getElementById('feedback-message');
+            const progContainer = document.getElementById('progress-container');
+            const progFill = document.getElementById('progress-fill');
+
+            if(user !== 'leafeon' || pass !== '31072025') {
+                msgBox.style.display = 'block';
+                msgBox.className = 'msg-error';
+                msgBox.innerText = 'Mmm ya,,,, esa no es la respuesta correcta. Intenta de nuevo pa ve';
+                msgBox.style.animation = 'none';
+                msgBox.offsetHeight; 
+                msgBox.style.animation = null; 
+                return;
+            }
+            
+            btn.style.display = 'none';
+            document.querySelectorAll('input').forEach(i => i.disabled = true);
+            
+            msgBox.style.display = 'block';
+            msgBox.className = 'msg-error';
+            msgBox.innerText = '¿¿¿CONTRASEÑA INCORRECTA??? COMO NO TE LO VAS A SABER OKITIII';
+
+            progContainer.style.display = 'block';
+            setTimeout(() => progFill.style.width = '100%', 50);
+
+            setTimeout(() => {
+                msgBox.className = 'msg-success';
+                msgBox.innerText = 'aaa te la creíste, pasaste la prueba mol';
+                progContainer.style.display = 'block';
+
+                // Da un segundito extra para respirar antes de pasar a las reglas
+                setTimeout(() => { goToScreen(3, 'stage-3'); }, 3000); 
+            }, 3000);
+        }
+
+        let gameLoop, spawnLoop;
+        let items = [];
+        let lives = 3;
+        let saved = 0;
+        const totalToSave = 20;
+        let gameActive = false;
+
+        function startGame() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('game-ui').style.display = 'block';
+            document.body.className = 'stage-3';
+            
+            // Reaparecer la UI del juego por si se reinicia
+            document.querySelector('.top-bar').classList.remove('fade-out-up');
+            document.getElementById('trash-can').classList.remove('fade-out-down');
+            
+            lives = 3;
+            saved = 0;
+            items = [];
+            document.querySelectorAll('.falling-item').forEach(i => i.remove());
+            updateUI();
+            
+            gameActive = true;
+            spawnLoop = setInterval(spawnItem, 800); 
+            requestAnimationFrame(updateGame);
+        }
+
+        function restartGame() {
+            document.getElementById('screen-game-over').classList.remove('active');
+            startGame();
+        }
+
+        function updateUI() {
+            let heartsHTML = '';
+            for(let i=0; i<3; i++) {
+                heartsHTML += `<span id="heart-${i}" class="heart-icon">${i < lives ? '❤️' : '🖤'}</span>`;
+            }
+            document.getElementById('lives-container').innerHTML = heartsHTML;
+            document.getElementById('score-text').innerText = (totalToSave - 1) - saved; 
+        }
+
+        function spawnItem() {
+            if(!gameActive || saved >= 20) return;
+
+            const item = document.createElement('div');
+            item.className = 'falling-item';
+            
+            const imgUrl = memoryImages[saved % memoryImages.length]; 
+            item.style.backgroundImage = `url('${imgUrl}')`;
+            
+            const startX = Math.random() * (window.innerWidth - 110) + 10;
+            item.style.left = startX + 'px';
+            item.style.top = '-110px';
+            
+            document.body.appendChild(item);
+
+            items.push({
+                element: item,
+                y: -110,
+                speed: 4.5 + Math.random() * 4, 
+                rotation: 0,
+                rotSpeed: (Math.random() - 0.5) * 15
+            });
+
+            item.addEventListener('touchstart', (e) => { e.preventDefault(); collectItem(item); });
+            item.addEventListener('mousedown', (e) => { e.preventDefault(); collectItem(item); });
+        }
+
+        function collectItem(element) {
+            if(!gameActive) return;
+            const index = items.findIndex(i => i.element === element);
+            if(index > -1) {
+                const rect = element.getBoundingClientRect();
+                createExplosion(rect.left + 55, rect.top + 55); 
+                
+                element.remove();
+                items.splice(index, 1);
+                saved++;
+                updateUI();
+
+                if(saved === 19) {
+                    // Hacer explotar las imágenes restantes para que no queden bugeadas en el fondo
+                    items.forEach(obj => {
+                        const r = obj.element.getBoundingClientRect();
+                        createExplosion(r.left + 55, r.top + 55);
+                        obj.element.remove();
+                    });
+                    items = []; // Limpiar el arreglo
+                    startBossPhase();
+                }
+            }
+        }
+
+        function updateGame() {
+            if(!gameActive) return;
+            const trashLimit = window.innerHeight - 80;
+
+            for(let i = items.length - 1; i >= 0; i--) {
+                let obj = items[i];
+                obj.y += obj.speed;
+                obj.rotation += obj.rotSpeed;
+                
+                obj.element.style.top = obj.y + 'px';
+                obj.element.style.transform = `rotate(${obj.rotation}deg)`;
+
+                if(obj.y > trashLimit) {
+                    const trash = document.getElementById('trash-can');
+                    trash.style.transform = 'translateX(-50%) scale(1.3)';
+                    setTimeout(() => trash.style.transform = 'translateX(-50%) scale(1)', 150);
+
+                    obj.element.remove();
+                    items.splice(i, 1);
+                    loseLife();
+                }
+            }
+            if(gameActive) requestAnimationFrame(updateGame);
+        }
+
+        function loseLife() {
+            if(lives <= 0) return;
+            
+            // Animación de explotar el corazón actual
+            const heartEl = document.getElementById(`heart-${lives - 1}`);
+            if(heartEl) {
+                const rect = heartEl.getBoundingClientRect();
+                createExplosion(rect.left + rect.width/2, rect.top + rect.height/2, true);
+                heartEl.style.opacity = '0';
+            }
+            
+            lives--;
+            
+            // Retraso ligero para permitir ver la explosión antes de actualizar la UI completa
+            setTimeout(() => {
+                updateUI();
+                if(lives <= 0) {
+                    gameActive = false;
+                    clearInterval(spawnLoop);
+                    document.getElementById('game-ui').style.display = 'none';
+                    goToScreen('game-over');
+                }
+            }, 300);
+        }
+
+        // EXPLOSIÓN SÚPER ROSA
+        function createExplosion(x, y, isHeart = false) {
+            for(let i=0; i<12; i++) { 
+                const p = document.createElement('div');
+                p.className = 'particle';
+                
+                // Si es un corazón, lo hacemos rojo oscuro/intenso
+                if(isHeart) {
+                    p.style.backgroundColor = '#e11d48';
+                    p.style.boxShadow = '0 0 10px #e11d48, 0 0 20px #9f1239';
+                }
+                
+                p.style.left = x + 'px';
+                p.style.top = y + 'px';
+                const angle = (Math.PI * 2 / 12) * i;
+                const distance = isHeart ? 60 : 100; // Distancia adaptada
+                p.style.setProperty('--tx', Math.cos(angle) * distance + 'px');
+                p.style.setProperty('--ty', Math.sin(angle) * distance + 'px');
+                document.body.appendChild(p);
+                setTimeout(() => p.remove(), 700);
+            }
+        }
+
+        let bossHealth = 35; 
+        let bossObj = { y: -260 }; 
+
+        function showMessage(id, delayRemove) {
+            const msg = document.getElementById(id);
+            msg.classList.add('show');
+            return new Promise(res => {
+                setTimeout(() => {
+                    msg.classList.remove('show');
+                    res();
+                }, delayRemove);
+            });
+        }
+
+        async function countdownAndText(text) {
+            const msgNum = document.getElementById('massive-msg-5');
+            for(let i=3; i>=1; i--) {
+                msgNum.innerText = i;
+                msgNum.classList.add('show');
+                await new Promise(r => setTimeout(r, 1500)); // Conteo más lento (1.5s por número)
+                msgNum.classList.remove('show');
+                msgNum.offsetHeight; 
+            }
+            msgNum.style.fontSize = '3rem';
+            msgNum.innerText = text;
+            msgNum.classList.add('show');
+            await new Promise(r => setTimeout(r, 2500));
+            msgNum.classList.remove('show');
+        }
+
+        async function startBossPhase() {
+            gameActive = false;
+            clearInterval(spawnLoop);
+            document.body.className = 'stage-boss';
+            
+            // Desaparecer UI de vidas con animaciones fluidas (Dejamos la papelera)
+            document.querySelector('.top-bar').classList.add('fade-out-up');
+            
+            // Tiempos más largos para leer con tranquilidad
+            await showMessage('massive-msg-1', 4000); 
+            await showMessage('massive-msg-2', 5000); 
+            await countdownAndText("DALE MUCHAS VECES AL RECUERDO");
+
+            const boss = document.getElementById('boss-item');
+            boss.style.backgroundImage = `url('${memoryImages[14] || memoryImages[0]}')`;
+
+            const healthBar = document.getElementById('boss-health-bar');
+            boss.style.display = 'flex';
+            healthBar.style.display = 'block';
+            bossObj.y = -260;
+            bossHealth = 25; 
+            updateBossHealth();
+
+            const hitBoss = (e) => {
+                e.preventDefault();
+                bossHealth--;
+                updateBossHealth();
+                createExplosion(window.innerWidth/2, bossObj.y + 120); 
+                
+                boss.style.transform = `translateX(-50%) scale(0.9) rotate(${(Math.random()-0.5)*20}deg)`;
+                setTimeout(() => boss.style.transform = `translateX(-50%) scale(1)`, 100);
+
+                if(bossHealth <= 0) {
+                    boss.removeEventListener('touchstart', hitBoss);
+                    boss.removeEventListener('mousedown', hitBoss);
+                    winBoss();
+                }
+            };
+
+            boss.addEventListener('touchstart', hitBoss);
+            boss.addEventListener('mousedown', hitBoss);
+
+            let bossDrop = setInterval(() => {
+                bossObj.y += 2.2; 
+                boss.style.top = bossObj.y + 'px';
+                if(bossObj.y > window.innerHeight - 200) {
+                    clearInterval(bossDrop);
+                    boss.style.display = 'none';
+                    healthBar.style.display = 'none';
+                    goToScreen('game-over');
+                }
+            }, 20);
+
+            boss.dataset.intervalId = bossDrop;
+        }
+
+        function updateBossHealth() {
+            document.getElementById('boss-health-fill').style.width = (bossHealth / 25 * 100) + '%';
+        }
+
+        async function winBoss() {
+            const boss = document.getElementById('boss-item');
+            clearInterval(parseInt(boss.dataset.intervalId));
+            boss.style.display = 'none';
+            document.getElementById('boss-health-bar').style.display = 'none';
+            
+            for(let i=0; i<8; i++) {
+                setTimeout(() => createExplosion(window.innerWidth/2 + (Math.random()-0.5)*150, window.innerHeight/2 + (Math.random()-0.5)*150), i*150);
+            }
+
+            // Tiempos más largos
+            await showMessage('massive-msg-3', 4000); 
+            await showMessage('massive-msg-4', 4000); 
+            await countdownAndText("DESLIZA EL DEDO POR TODA LA PANTALLA");
+
+            startSweepPhase();
+        }
+
+        let dirtCount = 0;
+        let sweepTimer;
+        
+        function startSweepPhase() {
+            document.getElementById('game-ui').style.display = 'none';
+            const cont = document.getElementById('sweep-container');
+            const broom = document.getElementById('broom-cursor');
+            
+            cont.style.display = 'block';
+            broom.style.display = 'block';
+            cont.innerHTML = ''; 
+            
+            cont.style.backgroundImage = `url('${fotoFinalBarrer}')`;
+            document.getElementById('sweep-time-bar').style.display = 'block';
+
+            const cols = 8; const rows = 12;
+            dirtCount = cols * rows;
+
+            for(let r=0; r<rows; r++) {
+                for(let c=0; c<cols; c++) {
+                    let dirt = document.createElement('div');
+                    dirt.className = 'dirt-patch';
+                    dirt.style.width = (100 / cols) + 'vw';
+                    dirt.style.height = (100 / rows) + 'vh';
+                    dirt.style.left = (c * (100 / cols)) + 'vw';
+                    dirt.style.top = (r * (100 / rows)) + 'vh';
+                    
+                    if(imagenSuciedad) {
+                        dirt.style.backgroundImage = `url('${imagenSuciedad}')`;
+                        dirt.style.backgroundSize = '100vw 100vh';
+                        dirt.style.backgroundPosition = `-${c * (100 / cols)}vw -${r * (100 / rows)}vh`;
+                    }
+
+                    cont.appendChild(dirt);
+                }
+            }
+
+            const cleanAndMoveBroom = (e) => {
+                e.preventDefault();
+                let x, y;
+                if(e.touches) {
+                    x = e.touches[0].clientX;
+                    y = e.touches[0].clientY;
+                } else {
+                    x = e.clientX;
+                    y = e.clientY;
+                }
+
+                broom.style.left = x + 'px';
+                broom.style.top = y + 'px';
+
+                let el = document.elementFromPoint(x, y);
+                if(el && el.classList.contains('dirt-patch') && el.style.opacity !== '0') {
+                    el.style.opacity = '0';
+                    el.style.pointerEvents = 'none';
+                    dirtCount--;
+                    if(dirtCount <= rows * 1.5) { 
+                        winSweep();
+                    }
+                }
+            };
+
+            cont.addEventListener('touchmove', cleanAndMoveBroom);
+            cont.addEventListener('mousemove', cleanAndMoveBroom);
+
+            const timeFill = document.getElementById('sweep-time-fill');
+            timeFill.style.transition = 'none';
+            timeFill.style.width = '100%';
+            setTimeout(() => {
+                timeFill.style.transition = 'width 15s linear';
+                timeFill.style.width = '0%';
+            }, 50);
+
+            sweepTimer = setTimeout(() => {
+                cont.removeEventListener('touchmove', cleanAndMoveBroom);
+                cont.style.display = 'none';
+                broom.style.display = 'none';
+                document.getElementById('sweep-time-bar').style.display = 'none';
+                goToScreen('game-over'); 
+            }, 15000);
+        }
+
+        function winSweep() {
+            clearTimeout(sweepTimer);
+            const cont = document.getElementById('sweep-container');
+            const broom = document.getElementById('broom-cursor');
+            
+            document.getElementById('sweep-time-bar').style.display = 'none';
+            broom.style.display = 'none'; 
+            cont.style.transition = 'opacity 1s';
+            cont.style.opacity = '0';
+            
+            setTimeout(() => {
+                cont.style.display = 'none';
+                startLetterPhase();
+            }, 1000);
+        }
+
+        // --- CARTA FINAL ---
+        const finalLetter = "conchale por fín, ya se me hizo de noche y a esta hora no pasa busito, pero como te decía mi amor, gracias por tantos buenos momentos, cada uno de estos recuerdos los llevo conmigo a donde voy y así será por siempre, gracias por preocuparte tanto por mí y por demostrarme un amor tan genuino y tan bonito. Gracias por ser mí apoyo y permitirme ser el tuyo, porque mí objetivo es que seas felÍz y haré todo lo que pueda para hacerlo posible, te extraño muchote y quisiera verte cada día, pero estos recuerdos me trasladan a distintos momentos que hemos tenido durante lo que llevamos de conocernos, cosa que me llena el corazon y aunque no lo creas, me ayuda más de lo que puedes pensar. Pero ahora sí te toca tu regalito pq te lo ganaste, que aunque no te lo haya podido dar en persona todavía, espero que te guste muchito mi princesita preciosa, te amo nojola q alechela.";
+        
+        let letterStarted = false; 
+
+        function startLetterPhase() {
+            if(letterStarted) return; 
+            letterStarted = true;
+
+            document.body.className = 'stage-letter';
+            document.getElementById('screen-letter').classList.add('active');
+            
+            const txtBox = document.getElementById('letter-container');
+            txtBox.innerHTML = '';
+            let i = 0;
+
+            function typeWriter() {
+                if (i < finalLetter.length) {
+                    txtBox.innerHTML += finalLetter.charAt(i);
+                    i++;
+                    txtBox.scrollTop = txtBox.scrollHeight; 
+                    setTimeout(typeWriter, 55); // Escribiendo un poquito más relajado (55ms por letra en vez de 40ms)
+                } else {
+                    document.getElementById('btn-regalo').style.display = 'block';
+                }
+            }
+            
+            setTimeout(typeWriter, 1500); // Un segundo y medio de pausa antes de empezar a escribir
+        }
+    </script>
+</body>
+</html>
